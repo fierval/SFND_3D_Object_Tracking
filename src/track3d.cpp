@@ -17,8 +17,8 @@ void Track3d::run_tracking_loop()
 
     /* DETECT & CLASSIFY OBJECTS */
 
-    float confThreshold = 0.2;
-    float nmsThreshold = 0.4;
+    float confThreshold = 0.2f;
+    float nmsThreshold = 0.4f;
     detectObjects((dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->boundingBoxes, confThreshold, nmsThreshold,
       yoloBasePath, yoloClassesFile, yoloModelConfiguration, yoloModelWeights, bVis);
 
@@ -33,7 +33,7 @@ void Track3d::run_tracking_loop()
     loadLidarFromFile(lidarPoints, lidarFullFilename);
 
     // remove Lidar points based on distance properties
-    float minZ = -1.5, maxZ = -0.9, minX = 2.0, maxX = 20.0, maxY = 2.0, minR = 0.1; // focus on ego lane
+    float minZ = -1.5f, maxZ = -0.9f, minX = 2.0f, maxX = 20.0f, maxY = 2.0f, minR = 0.1f; // focus on ego lane
     cropLidarPoints(lidarPoints, minX, maxX, maxY, minZ, maxZ, minR);
 
     (dataBuffer.end() - 1)->lidarPoints = lidarPoints;
@@ -107,7 +107,7 @@ void Track3d::run_tracking_loop()
 
       //// STUDENT ASSIGNMENT
       //// TASK FP.1 -> match list of 3D objects (vector<BoundingBox>) between current and previous frame (implement ->matchBoundingBoxes)
-      map<int, int> bbBestMatches;
+      unordered_map<int, int> bbBestMatches;
       matchBoundingBoxes(matches, bbBestMatches, *(dataBuffer.end() - 2), *(dataBuffer.end() - 1)); // associate bounding boxes between current and previous frame using keypoint matches
       //// EOF STUDENT ASSIGNMENT
 
