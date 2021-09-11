@@ -18,7 +18,8 @@ set(SOURCE_FILES
     src/FinalProject_Camera.cpp 
     src/lidarData.cpp 
     src/matching2D_Student.cpp 
-    src/objectDetection2D.cpp)
+    src/objectDetection2D.cpp
+    src/track3d.cpp)
 
 # Executable for create matrix exercise
 add_executable (3D_object_tracking ${SOURCE_FILES})
