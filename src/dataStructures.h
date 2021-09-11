@@ -37,4 +37,38 @@ struct DataFrame { // represents the available sensor information at the same ti
     std::map<int,int> bbMatches; // bounding box matches between previous and current frame
 };
 
+struct DetectorTypes {
+  constexpr static char SHITOMASI[] = "SHITOMASI";
+  constexpr static char HARRIS[] = "HARRIS";
+  constexpr static char FAST[] = "FAST";
+  constexpr static char BRISK[] = "BRISK";
+  constexpr static char ORB[] = "ORB";
+  constexpr static char AKAZE[] = "AKAZE";
+  constexpr static char SIFT[] = "SIFT";
+};
+
+struct DescriptorTypes {
+  constexpr static char FREAK[] = "FREAK";
+  constexpr static char BRIEF[] = "BRIEF";
+  constexpr static char BRISK[] = "BRISK";
+  constexpr static char ORB[] = "ORB";
+  constexpr static char AKAZE[] = "AKAZE";
+  constexpr static char SIFT[] = "SIFT";
+};
+
+struct DescriptorClasses {
+  constexpr static char DES_BINARY[] = "DES_BINARY";
+  constexpr static char DES_HOG[] = "DES_HOG";
+};
+
+struct SelectorTypes {
+  constexpr static char SEL_NN[] = "SEL_NN";
+  constexpr static char SEL_KNN[] = "SEL_KNN";
+};
+
+struct MatcherTypes {
+  constexpr static char MAT_BF[] = "MAT_BF";
+  constexpr static char MAT_FLANN[] = "MAT_FLANN";
+};
+
 #endif /* dataStructures_h */
