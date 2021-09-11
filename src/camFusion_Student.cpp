@@ -159,5 +159,56 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
 
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::unordered_map<int, int> &bbBestMatches, DataFrame &prevFrame, DataFrame &currFrame)
 {
-    // ...
+  auto& prev_bboxes = prevFrame.boundingBoxes;
+  auto& cur_bboxes = currFrame.boundingBoxes;
+
+  // map of all hit tests
+  // TODO: This is one ugly data structure!
+  std::unordered_map<int, std::unordered_map<int, int>> all_matches;
+
+  for (auto& m : matches) {
+    cv::KeyPoint prevPt = prevFrame.keypoints[m.queryIdx];
+    cv::KeyPoint curPt = currFrame.keypoints[m.trainIdx];
+
+    for (int idx_prev = 0; idx_prev < prev_bboxes.size(); idx_prev++) {
+
+      BoundingBox& prev_bb = prev_bboxes[idx_prev];
+      if (!prev_bb.roi.contains(prevPt.pt)) {
+        continue;
+      }
+      // now loop over current matches and find the bounding box
+      else {
+        if (all_matches.count(idx_prev) == 0) {
+          all_matches.insert(std::make_pair(idx_prev, std::unordered_map<int, int>()));
+        }
+
+        auto& cur_map = all_matches[idx_prev];
+
+        for (int idx_cur = 0; idx_cur < cur_bboxes.size(); idx_cur++) {
+
+          BoundingBox& cur_bb = cur_bboxes[idx_cur];
+          if (!cur_bb.roi.contains(curPt.pt)) {
+            continue;
+          }
+
+          // and create a pair
+          if (cur_map.count(idx_cur) == 0) {
+            cur_map.insert(std::make_pair(idx_cur, 0));
+          }
+          cur_map[idx_cur]++;
+        }
+      }
+    }
+  }
+
+  // for each prev bbox, find the best match and store in the return structure
+  std::transform(all_matches.begin(), all_matches.end(), std::inserter(bbBestMatches, bbBestMatches.end()), [&bbBestMatches](std::pair<int, std::unordered_map<int, int>> cur_matches) {
+
+    // find the box with the maximum number of matches
+    std::pair<int, int> best_match = *std::max_element(cur_matches.second.begin(), cur_matches.second.end(),
+      [](std::pair<int, int> e1, std::pair<int, int> e2) {return e1.second < e2.second; });
+
+    return std::make_pair(cur_matches.first, best_match.first);
+
+    });
 }
