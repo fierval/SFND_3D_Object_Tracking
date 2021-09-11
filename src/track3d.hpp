@@ -31,6 +31,37 @@ public:
   }
 
 
+  // Main loop
+  void run_tracking_loop();
+
+private:
+
+  inline string load_image(int imgIndex) {
+    // assemble filenames for current index
+    ostringstream imgNumber;
+    imgNumber << setfill('0') << setw(imgFillWidth) << imgStartIndex + imgIndex;
+    string imgFullFilename = imgBasePath + imgPrefix + imgNumber.str() + imgFileType;
+
+    // load image from file 
+    cv::Mat img = cv::imread(imgFullFilename);
+
+    // push image into data frame buffer
+    DataFrame frame;
+    frame.cameraImg = img;
+    if (imgIndex >= dataBufferSize) {
+      // rotate out
+      std::rotate(dataBuffer.begin(), dataBuffer.begin() + 1, dataBuffer.end());
+
+      // insert at the end
+      *dataBuffer.rbegin() = frame;
+    }
+    else {
+      dataBuffer.push_back(frame);
+    }
+
+    return imgNumber.str();
+  }
+
   inline void visualize(BoundingBox* currBB, double ttcLidar, double ttcCamera) {
     cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();
     showLidarImgOverlay(visImg, currBB->lidarPoints, P_rect_00, R_rect_00, RT, &visImg);
@@ -48,10 +79,6 @@ public:
 
   }
 
-  // Main loop
-  void run_tracking_loop();
-
-private:
 
   inline void detectKeypoints(cv::Mat& imgGray, vector<cv::KeyPoint>& keypoints) {
     if (detectorType.compare(DetectorTypes::SHITOMASI) == 0)

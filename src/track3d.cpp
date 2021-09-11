@@ -10,27 +10,7 @@ void Track3d::run_tracking_loop()
   {
     /* LOAD IMAGE INTO BUFFER */
 
-    // assemble filenames for current index
-    ostringstream imgNumber;
-    imgNumber << setfill('0') << setw(imgFillWidth) << imgStartIndex + imgIndex;
-    string imgFullFilename = imgBasePath + imgPrefix + imgNumber.str() + imgFileType;
-
-    // load image from file 
-    cv::Mat img = cv::imread(imgFullFilename);
-
-    // push image into data frame buffer
-    DataFrame frame;
-    frame.cameraImg = img;
-    if (imgIndex >= dataBufferSize) {
-      // rotate out
-      std::rotate(dataBuffer.begin(), dataBuffer.begin() + 1, dataBuffer.end());
-
-      // insert at the end
-      *dataBuffer.rbegin() = frame;
-    }
-    else {
-      dataBuffer.push_back(frame);
-    }
+    string imgNumber = load_image(imgIndex);
 
     cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
 
@@ -48,7 +28,7 @@ void Track3d::run_tracking_loop()
     /* CROP LIDAR POINTS */
 
     // load 3D Lidar points from file
-    string lidarFullFilename = imgBasePath + lidarPrefix + imgNumber.str() + lidarFileType;
+    string lidarFullFilename = imgBasePath + lidarPrefix + imgNumber + lidarFileType;
     std::vector<LidarPoint> lidarPoints;
     loadLidarFromFile(lidarPoints, lidarFullFilename);
 
