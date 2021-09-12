@@ -96,40 +96,45 @@ private:
   }
 
   // data location
-  string dataPath = "../";
+  static inline string dataPath = "../../../";
 
+  // log location
+  static inline string docPath = dataPath + "doc/";
   // camera
-  string imgBasePath = dataPath + "images/";
-  string imgPrefix = "KITTI/2011_09_26/image_02/data/000000"; // left camera, color
-  string imgFileType = ".png";
-  int imgStartIndex = 0; // first file index to load (assumes Lidar and camera names have identical naming convention)
-  int imgEndIndex = 18;   // last file index to load
-  int imgStepWidth = 1;
-  int imgFillWidth = 4;  // no. of digits which make up the file index (e.g. img-0001.png)
+  static inline string imgBasePath = dataPath + "images/";
+  static inline string imgPrefix = "KITTI/2011_09_26/image_02/data/000000"; // left camera, color
+  static inline string imgFileType = ".png";
+  static inline int imgStartIndex = 0; // first file index to load (assumes Lidar and camera names have identical naming convention)
+  static inline int imgEndIndex = 18;   // last file index to load
+  static inline int imgStepWidth = 1;
+  static inline int imgFillWidth = 4;  // no. of digits which make up the file index (e.g. img-0001.png)
 
   // object detection
-  string yoloBasePath = dataPath + "dat/yolo/";
-  string yoloClassesFile = yoloBasePath + "coco.names";
-  string yoloModelConfiguration = yoloBasePath + "yolov3.cfg";
-  string yoloModelWeights = yoloBasePath + "yolov3.weights";
+  static inline string yoloBasePath = dataPath + "dat/yolo/";
+  static inline string yoloClassesFile = yoloBasePath + "coco.names";
+  static inline string yoloModelConfiguration = yoloBasePath + "yolov3.cfg";
+  static inline string yoloModelWeights = yoloBasePath + "yolov3.weights";
 
   // Lidar
-  string lidarPrefix = "KITTI/2011_09_26/velodyne_points/data/000000";
-  string lidarFileType = ".bin";
+  static inline string lidarPrefix = "KITTI/2011_09_26/velodyne_points/data/000000";
+  static inline string lidarFileType = ".bin";
 
-  // calibration data for camera and lidar
-  cv::Mat P_rect_00, R_rect_00, RT;
   // misc
-  double sensorFrameRate = 10.0 / imgStepWidth; // frames per second for Lidar and camera
-  int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
-  vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
+  static inline double sensorFrameRate = 10.0 / imgStepWidth; // frames per second for Lidar and camera
+  static inline int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
 
+
+  static inline string matcherType = MatcherTypes::MAT_BF;        // MAT_BF, MAT_FLANN
+  static inline string selectorType = SelectorTypes::SEL_KNN;       // SEL_NN, SEL_KNN
+
+  vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
   string detectorType;
   string descriptorType;
   bool bVis;
 
-  string matcherType = MatcherTypes::MAT_BF;        // MAT_BF, MAT_FLANN
   string descriptorClass;                            // DES_BINARY, DES_HOG
-  string selectorType = SelectorTypes::SEL_KNN;       // SEL_NN, SEL_KNN
+
+  // calibration data for camera and lidar
+  cv::Mat P_rect_00, R_rect_00, RT;
 
 };
