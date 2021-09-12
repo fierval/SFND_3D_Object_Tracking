@@ -14,6 +14,7 @@
 #include "objectDetection2D.hpp"
 #include "lidarData.hpp"
 #include "camFusion.hpp"
+#include "logger.hpp"
 
 //REVIEW: This is a bad practice!
 using namespace std;
@@ -28,16 +29,26 @@ public:
     TTC = 4,
     All = 7
   };
-  
+
   Track3d(string& _detectorType, string& _descriptorType, int _bVis = (int)Visualize::None)
     : detectorType(_detectorType)
     , descriptorType(_descriptorType)
-    , bVis(_bVis) {
+    , descriptorClass(getDescriptorClass(_descriptorType))
+    , bVis(_bVis)
+    , bDataCollection(_bVis == (int)Visualize::None) {
 
-    descriptorClass = getDescriptorClass(descriptorType);
     std::tie(P_rect_00, R_rect_00, RT) = CalibParams::Initialize();
   }
 
+
+  static inline std::shared_ptr<CsvLogger<float>> lidar_logger;
+  static inline std::shared_ptr<CsvLogger<float>> camera_logger;
+
+  // data location
+  static inline string dataPath = "../../../";
+
+  // log location
+  static inline string docPath = dataPath + "doc/";
 
   // Main loop
   void run_tracking_loop();
@@ -106,11 +117,6 @@ private:
     }
   }
 
-  // data location
-  static inline string dataPath = "../../../";
-
-  // log location
-  static inline string docPath = dataPath + "doc/";
   // camera
   static inline string imgBasePath = dataPath + "images/";
   static inline string imgPrefix = "KITTI/2011_09_26/image_02/data/000000"; // left camera, color
@@ -142,10 +148,10 @@ private:
   string detectorType;
   string descriptorType;
   int bVis;
+  bool bDataCollection;
 
   string descriptorClass;                            // DES_BINARY, DES_HOG
 
   // calibration data for camera and lidar
   cv::Mat P_rect_00, R_rect_00, RT;
-
 };

@@ -23,7 +23,7 @@ public:
 		std::iota(frames.begin(), frames.end(), 1);
 		ostringstream ss;
 		ss << ",";
-		std::copy(frames.begin(), frames.end(), std::ostream_iterator<int>(ss, ","));
+		std::copy(frames.begin(), frames.end() - 1, std::ostream_iterator<int>(ss, ","));
 		ss << *frames.rbegin();
 
 		header += ss.str();
