@@ -81,17 +81,20 @@ private:
 
 
   inline void detectKeypoints(cv::Mat& imgGray, vector<cv::KeyPoint>& keypoints) {
+
+    // Turn off keypoints visualization
+
     if (detectorType.compare(DetectorTypes::SHITOMASI) == 0)
     {
-      detKeypointsShiTomasi(keypoints, imgGray, bVis);
+      detKeypointsShiTomasi(keypoints, imgGray, false);
     }
     else if (detectorType.compare(DetectorTypes::HARRIS) == 0)
     {
-      detKeypointsHarris(keypoints, imgGray, bVis);
+      detKeypointsHarris(keypoints, imgGray, false);
     }
     else
     {
-      detKeypointsModern(keypoints, imgGray, detectorType, bVis);
+      detKeypointsModern(keypoints, imgGray, detectorType, false);
     }
   }
 
