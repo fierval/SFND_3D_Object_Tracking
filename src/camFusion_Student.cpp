@@ -251,11 +251,10 @@ double get_median_lidar_point(std::vector<LidarPoint>& points) {
 
 }
 
-void computeTTCLidar(std::vector<LidarPoint>& lidarPointsPrev,
-  std::vector<LidarPoint>& lidarPointsCurr, double frameRate, double& TTC)
+void computeTTCLidar(std::vector<LidarPoint>& lidarPointsPrev, std::vector<LidarPoint>& lidarPointsCurr, double frameRate, double& TTC)
 {
   if (lidarPointsPrev.empty() || lidarPointsCurr.empty()) {
-    TTC = NAN;
+    TTC = std::numeric_limits<double>::infinity();
     return;
   }
 
