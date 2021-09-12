@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
+#include <limits>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -211,7 +212,7 @@ void computeTTCCamera(std::vector<cv::KeyPoint>& kptsPrev, std::vector<cv::KeyPo
   // only continue if list of distance ratios is not empty
   if (distRatios.size() == 0)
   {
-    TTC = NAN;
+    TTC = std::numeric_limits<double>::infinity();
     return;
   }
 
@@ -230,6 +231,26 @@ void computeTTCCamera(std::vector<cv::KeyPoint>& kptsPrev, std::vector<cv::KeyPo
 }
 
 
+double get_median_lidar_point(std::vector<LidarPoint>& points) {
+
+  float halfLane = 2.0; //assumed width of the ego lane: 4.0
+
+  std::vector<LidarPoint> relevant;
+  std::copy_if(points.begin(), points.end(), std::back_inserter(relevant), [&halfLane](LidarPoint& p) { return abs(p.y) <= halfLane; });
+
+  if (relevant.empty()) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  std::sort(relevant.begin(), relevant.end(), [](LidarPoint a, LidarPoint b) {return a.x < b.x; });
+
+  int medIndex = relevant.size() >> 1;
+
+  // compute median dist. ratio to remove outlier influence
+  return (relevant.size() & 1) == 0 ? (relevant[medIndex - 1].x + relevant[medIndex].x) / 2.0 : relevant[medIndex].x;
+
+}
+
 void computeTTCLidar(std::vector<LidarPoint>& lidarPointsPrev,
   std::vector<LidarPoint>& lidarPointsCurr, double frameRate, double& TTC)
 {
@@ -238,13 +259,12 @@ void computeTTCLidar(std::vector<LidarPoint>& lidarPointsPrev,
     return;
   }
 
-  // something to think about as far as outliers, but I am not sure using mean or median is the answer
-  // my car constantly makes a mistake when I drive out of a parking lot or my garage for no apparent reason and brakes hard
-  // I'd err on a side of caution in this case
-  LidarPoint minPrev = *std::min_element(lidarPointsPrev.begin(), lidarPointsPrev.end(), [](LidarPoint& a, LidarPoint& b) {return a.x < b.x; });
-  LidarPoint minCur = *std::min_element(lidarPointsCurr.begin(), lidarPointsCurr.end(), [](LidarPoint& a, LidarPoint& b) {return a.x < b.x; });
+  float dt = 1.0 / frameRate; 
 
-  TTC = minCur.x * (1.0 / frameRate) / (minPrev.x - minCur.x);
+  double d0 = get_median_lidar_point(lidarPointsPrev);
+  double d1 = get_median_lidar_point(lidarPointsCurr);
+
+  TTC = d1 * dt / (d0 - d1);
 }
 
 
