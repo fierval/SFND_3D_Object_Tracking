@@ -5,7 +5,8 @@ using namespace std;
 
 int main(int argc, const char* argv[]) {
 
-  bool bVis = true;
+  int bVis = (int)Track3d::Visualize::TTC;
+
   Track3d tracker(string(DetectorTypes::FAST), string(DescriptorTypes::ORB), bVis);
 
   tracker.run_tracking_loop();

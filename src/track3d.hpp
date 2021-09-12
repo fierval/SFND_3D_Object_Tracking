@@ -21,7 +21,15 @@ using namespace std;
 class Track3d {
 public:
 
-  Track3d(string& _detectorType, string& _descriptorType, bool _bVis = false)
+  enum class Visualize : int {
+    None = 0,
+    Detections = 1,
+    Lidar = 2,
+    TTC = 4,
+    All = 7
+  };
+  
+  Track3d(string& _detectorType, string& _descriptorType, int _bVis = (int)Visualize::None)
     : detectorType(_detectorType)
     , descriptorType(_descriptorType)
     , bVis(_bVis) {
@@ -69,7 +77,7 @@ private:
 
     char str[200];
     sprintf(str, "TTC Lidar : %f s, TTC Camera : %f s", ttcLidar, ttcCamera);
-    putText(visImg, str, cv::Point2f(80, 50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 255));
+    putText(visImg, str, cv::Point2f(80, 50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
 
     string windowName = "Final Results : TTC";
     cv::namedWindow(windowName, 4);
@@ -133,7 +141,7 @@ private:
   vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
   string detectorType;
   string descriptorType;
-  bool bVis;
+  int bVis;
 
   string descriptorClass;                            // DES_BINARY, DES_HOG
 

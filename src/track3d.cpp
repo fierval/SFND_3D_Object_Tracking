@@ -20,7 +20,7 @@ void Track3d::run_tracking_loop()
     float confThreshold = 0.2f;
     float nmsThreshold = 0.4f;
     detectObjects((dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->boundingBoxes, confThreshold, nmsThreshold,
-      yoloBasePath, yoloClassesFile, yoloModelConfiguration, yoloModelWeights, bVis);
+      yoloBasePath, yoloClassesFile, yoloModelConfiguration, yoloModelWeights, bVis & (int)Visualize::Detections);
 
     cout << "#2 : DETECT & CLASSIFY OBJECTS done" << endl;
 
@@ -48,16 +48,12 @@ void Track3d::run_tracking_loop()
     clusterLidarWithROI((dataBuffer.end() - 1)->boundingBoxes, (dataBuffer.end() - 1)->lidarPoints, shrinkFactor, P_rect_00, R_rect_00, RT);
 
     // Visualize 3D objects
-    if (bVis)
+    if (bVis & (int)Visualize::Lidar)
     {
       show3DObjects((dataBuffer.end() - 1)->boundingBoxes, cv::Size(4.0, 20.0), cv::Size(2000, 2000), true);
     }
 
     cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
-
-
-    // REMOVE THIS LINE BEFORE PROCEEDING WITH THE FINAL PROJECT
-    continue; // skips directly to the next image without processing what comes beneath
 
     /* DETECT IMAGE KEYPOINTS */
 
@@ -107,18 +103,33 @@ void Track3d::run_tracking_loop()
 
       //// STUDENT ASSIGNMENT
       //// TASK FP.1 -> match list of 3D objects (vector<BoundingBox>) between current and previous frame (implement ->matchBoundingBoxes)
-      unordered_map<int, int> bbBestMatches;
+      std::unordered_map<int, int> bbBestMatches;
+      std::unordered_map<int, int> relevant_bbs;
+
       matchBoundingBoxes(matches, bbBestMatches, *(dataBuffer.end() - 2), *(dataBuffer.end() - 1)); // associate bounding boxes between current and previous frame using keypoint matches
+
+      // remove irrelevant matches - those that don't contain tracked lidar points
+      std::remove_copy_if(bbBestMatches.begin(), bbBestMatches.end(), inserter(relevant_bbs, relevant_bbs.end()), [&](std::pair<int, int> el) {
+
+        bool no_lidar = std::find_if(dataBuffer.rbegin()->boundingBoxes.begin(), dataBuffer.rbegin()->boundingBoxes.end(), [&](BoundingBox& bb) {return el.second == bb.boxID; })->lidarPoints.empty();
+        if (no_lidar) {
+          return true;
+        }
+
+        bool prev_no_lidar = std::find_if(dataBuffer.begin()->boundingBoxes.begin(), dataBuffer.begin()->boundingBoxes.end(), [&](BoundingBox& bb) {return el.first == bb.boxID; })->lidarPoints.empty();
+        return prev_no_lidar;
+
+        });
+
       //// EOF STUDENT ASSIGNMENT
 
       // store matches in current data frame
-      (dataBuffer.end() - 1)->bbMatches = bbBestMatches;
+      (dataBuffer.end() - 1)->bbMatches = relevant_bbs;
 
       cout << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << endl;
 
 
       /* COMPUTE TTC ON OBJECT IN FRONT */
-
       // loop over all BB match pairs
       for (auto it1 = (dataBuffer.end() - 1)->bbMatches.begin(); it1 != (dataBuffer.end() - 1)->bbMatches.end(); ++it1)
       {
@@ -129,6 +140,7 @@ void Track3d::run_tracking_loop()
           if (it1->second == it2->boxID) // check wether current match partner corresponds to this BB
           {
             currBB = &(*it2);
+            break;
           }
         }
 
@@ -137,32 +149,30 @@ void Track3d::run_tracking_loop()
           if (it1->first == it2->boxID) // check wether current match partner corresponds to this BB
           {
             prevBB = &(*it2);
+            break;
           }
         }
 
         // compute TTC for current match
-        if (currBB->lidarPoints.size() > 0 && prevBB->lidarPoints.size() > 0) // only compute TTC if we have Lidar points
-        {
           //// STUDENT ASSIGNMENT
           //// TASK FP.2 -> compute time-to-collision based on Lidar data (implement -> computeTTCLidar)
-          double ttcLidar;
-          computeTTCLidar(prevBB->lidarPoints, currBB->lidarPoints, sensorFrameRate, ttcLidar);
-          //// EOF STUDENT ASSIGNMENT
+        double ttcLidar;
+        computeTTCLidar(prevBB->lidarPoints, currBB->lidarPoints, sensorFrameRate, ttcLidar);
+        //// EOF STUDENT ASSIGNMENT
 
-          //// STUDENT ASSIGNMENT
-          //// TASK FP.3 -> assign enclosed keypoint matches to bounding box (implement -> clusterKptMatchesWithROI)
-          //// TASK FP.4 -> compute time-to-collision based on camera (implement -> computeTTCCamera)
-          double ttcCamera;
-          clusterKptMatchesWithROI(*currBB, (dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->kptMatches);
-          computeTTCCamera((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints, currBB->kptMatches, sensorFrameRate, ttcCamera);
-          //// EOF STUDENT ASSIGNMENT
+        //// STUDENT ASSIGNMENT
+        //// TASK FP.3 -> assign enclosed keypoint matches to bounding box (implement -> clusterKptMatchesWithROI)
+        //// TASK FP.4 -> compute time-to-collision based on camera (implement -> computeTTCCamera)
+        double ttcCamera;
+        clusterKptMatchesWithROI(*currBB, (dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->kptMatches);
+        computeTTCCamera((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints, currBB->kptMatches, sensorFrameRate, ttcCamera);
+        //// EOF STUDENT ASSIGNMENT
 
-          if (bVis)
-          {
-            visualize(currBB, ttcLidar, ttcCamera);
-          }
+        if (bVis & (int)Visualize::TTC)
+        {
+          visualize(currBB, ttcLidar, ttcCamera);
+        }
 
-        } // eof TTC computation
       } // eof loop over all BB matches            
     }
   } // eof loop over all images
