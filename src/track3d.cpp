@@ -160,7 +160,7 @@ void Track3d::run_tracking_loop()
         computeTTCLidar(prevBB->lidarPoints, currBB->lidarPoints, sensorFrameRate, ttcLidar);
         
         if (bDataCollection) {
-          lidar_logger->add_result(detectorType, descriptorType, ttcLidar);
+          lidar_logger->add_result("Lidar", ttcLidar);
         }
         //// EOF STUDENT ASSIGNMENT
 

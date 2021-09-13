@@ -36,7 +36,7 @@ int main(int argc, const char* argv[]) {
       Track3d tracker(detectorType, descriptorType, bVis);
       
       if (!Track3d::camera_logger) {
-        Track3d::lidar_logger = std::make_shared<CsvLogger<float>>("Detector_Descriptor", 18, Track3d::docPath + "lidar.csv");
+        Track3d::lidar_logger = std::make_shared<CsvLogger<float>>("Method", 18, Track3d::docPath + "lidar.csv");
         Track3d::camera_logger = std::make_shared<CsvLogger<float>>("Detector_Descriptor", 18, Track3d::docPath + "camera.csv");
       }
 

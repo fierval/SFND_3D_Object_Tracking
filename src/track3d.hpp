@@ -41,6 +41,7 @@ public:
   }
 
 
+  // Quick & dirty
   static inline std::shared_ptr<CsvLogger<float>> lidar_logger;
   static inline std::shared_ptr<CsvLogger<float>> camera_logger;
 
