@@ -6,17 +6,16 @@ using namespace std;
 
 int main(int argc, const char* argv[]) {
 
-
-
   int bVis = (int)Track3d::Visualize::None;
 
   // data collection
   vector<string> detectors{ DetectorTypes::AKAZE, DetectorTypes::BRISK, DetectorTypes::FAST, DetectorTypes::HARRIS, DetectorTypes::ORB, DetectorTypes::SHITOMASI, DetectorTypes::SIFT };
   vector<string> descriptors{ DescriptorTypes::BRIEF, DescriptorTypes::BRISK, DescriptorTypes::FREAK, DescriptorTypes::ORB, DescriptorTypes::SIFT };
 
+#ifdef VISUALIZE_LIDAR_ONLY
   Track3d tracker(string(DetectorTypes::FAST), string(DescriptorTypes::ORB), (int)Track3d::Visualize::Lidar);
   tracker.run_tracking_loop();
-  return 0;
+#endif  
 
   vector<std::pair<string, string>> detector_descriptor;
   
