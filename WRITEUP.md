@@ -4,17 +4,17 @@
 
 ## Refactoring / Data Collection
 
-Stuffing all functionality into the main loop makes it difficult to read/modify code. Significant refactoring has been done with a goal to separate the main function that needs to be modified from initialization & staging code (such as creating transformation matrices and loading images). The loop itself has been migrated to `track3d.cpp`
+Stuffing all functionality into the main loop makes it difficult to read/modify code. Significant refactoring has been done with a goal to separate the main function from initialization & staging code (such as creating transformation matrices and loading images). The loop itself has been migrated to `track3d.cpp`
 
 This refactoring allows for efficient data collection required by FP.5 and FP.6 in a single run
 
 ## FP.1 Match 3D Objects
 
-We first identify all possible matches and store them in staging datastructure which is `std::unordered_map<int, std::unordered_map<int, int>>` - a dictionary of dictionaries. It maps `prev_box_id -> (cur->box_id, number_of_matches)`. Once this is built, we transform it into the output `prev_box_id->cur_box_id` by reducing the value part of the staged dictionary to its maximum element.
+We first identify all possible matches and store them in a staging data structure which is `std::unordered_map<int, std::unordered_map<int, int>>` - a dictionary of dictionaries. It maps `prev_box_id -> (cur->box_id -> number_of_matches)`. Once this is built, we transform it into the output `prev_box_id->cur_box_id` by reducing the value part of the staged dictionary to its maximum element.
 
 ## FP.2 Compute Lidar-based TTC
 
-For each cluster of LIDAR points we compute median distance.
+For each cluster of LIDAR points we compute median distances (previous and current).
 Perhaps not the best idea, as in such computations as TTC it is always good to err on the side of caution. On the other hand being too cautios does not make for a great driving experience if the car is going to force-break more often than expected.
 
 ## FP.3 Associate Keypoint Correspondences with Bounding Boxes
@@ -39,7 +39,7 @@ The application can be run with lidar visualization only:
   tracker.run_tracking_loop();
 ```
 
-This will show that the distance from the lidar to the car in front gradually diminishes, although we still do not know how fast from frame-to-frame. Given that we are taking a **median** distance value for our TTC estmate (perhaps not a good idea to begin with), we are avoiding any anomaly that I can detect.
+The lidar points visualization will show that the distance from the lidar to the car in front gradually diminishes (from 7.97 m, going down each frame), although we still do not know how fast between the snapshots. Given that we are taking a **median** distance value for our TTC estimate (perhaps not a good idea to begin with), we are avoiding any anomaly that I can detect.
 
 ## FP.6 Performance Evaluation 2
 
