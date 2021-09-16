@@ -46,7 +46,7 @@ public:
   static inline std::shared_ptr<CsvLogger<float>> camera_logger;
 
   // data location
-  static inline string dataPath = "../../../";
+  static inline string dataPath = "../";
 
   // log location
   static inline string docPath = dataPath + "doc/";
